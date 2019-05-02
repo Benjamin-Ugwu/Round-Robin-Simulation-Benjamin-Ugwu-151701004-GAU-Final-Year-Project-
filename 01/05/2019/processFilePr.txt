@@ -1,0 +1,14 @@
+3	0	
+1	4	2	5	5
+2	3	5	5	5
+3	4	6	5	5
+4	3	12	5	5
+5	23	12	5	5
+6	4	8	5	5
+7	11	13	5	5
+8	21	12	5	5
+9	3	6	5	5
+10	8	90	5	5
+
+/*Quantum Time,Context switch Time */
+/*Process Name, Arrival Time, Burst Time1,Input/Output Time,Burst Time2 */
