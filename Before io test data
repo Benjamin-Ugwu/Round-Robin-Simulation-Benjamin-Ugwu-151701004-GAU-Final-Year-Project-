@@ -425,7 +425,7 @@ public class RoundRobinJFrame extends javax.swing.JFrame {
 
             },
             new String [] {
-                "#Job", "Arrival", "Burst 1", "i/o", "Burst 2", "Start", "Remaining", "Finish", "Waiting", "Turnaround"
+                "Job ID", "Arrival", "Burst 1", "i/o", "Burst 2", "Start", "Remaining", "Finish", "Waiting", "Turnaround"
             }
         ));
         jScrollPane2.setViewportView(jobPoolTable);
@@ -673,7 +673,7 @@ public class RoundRobinJFrame extends javax.swing.JFrame {
         jLabel19.setText("m/s");
 
         jLabel22.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
-        jLabel22.setText("CPU= Central Processing Unit.   I/O=Input/Output.   m/s=Millisecond");
+        jLabel22.setText("CPU= Central Processing Unit.   I/O(i/o)=Input/Output.   m/s=Millisecond.   ID=Identity");
 
         javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
         jPanel6.setLayout(jPanel6Layout);
@@ -689,15 +689,15 @@ public class RoundRobinJFrame extends javax.swing.JFrame {
                 .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(jPanel6Layout.createSequentialGroup()
                         .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addGap(0, 0, Short.MAX_VALUE))
+                        .addGap(0, 1088, Short.MAX_VALUE))
                     .addComponent(inputOutputScrollPane)
                     .addComponent(jScrollPane6)
                     .addComponent(jScrollPane7))
                 .addContainerGap())
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 519, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(427, 427, 427))
+                .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 646, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(329, 329, 329))
         );
         jPanel6Layout.setVerticalGroup(
             jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
