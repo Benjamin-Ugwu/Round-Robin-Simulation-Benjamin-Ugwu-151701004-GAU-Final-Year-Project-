@@ -1030,7 +1030,7 @@ public class RoundRobinJFrame extends javax.swing.JFrame {
                                     
                                     /////////////// 
                                     //adding to io
-                                    if(currentJob.remaining[0]==0 && currentJob.io>0 && currentJob.burst[1]>0 && currentJob.addToIO==false){                                        
+                                    if(currentJob.remaining[0]==0 && currentJob.io>0 && currentJob.addToIO==false){                                        
                                         ioQueue.add(currentJob);
                                         currentJob.addToIO=true;
                                         currentJob.ioInStart[0]=clock;//record when it entered io
