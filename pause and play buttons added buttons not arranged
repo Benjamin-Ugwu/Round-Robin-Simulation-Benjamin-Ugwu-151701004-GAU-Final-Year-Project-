@@ -1,0 +1,1432 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package RoundRobinPackage;
+
+import java.io.File;
+import java.util.LinkedList;
+import java.util.Scanner;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.table.DefaultTableModel;
+
+/**
+ *
+ * @author lenovo
+ */
+
+
+
+ class Job{//each process is a job class
+    
+    public int jobNumber;    // job ID
+    public int arrivalTime;
+        
+    public int[] burst=new int[2];    
+    public int[] start=new int[2];
+    public boolean[] finished=new boolean[2];  // show if job is finished or not
+    public int[] finish=new int[2];        // finish time
+    public int[] remaining=new int[2];
+    
+    int whichBurst;
+    public int io;    
+    public int[] ioInStart=new int[2];
+    public int ioRemaining;
+    public boolean addToIO;
+    public boolean returned;
+    
+
+    public Job()
+    {
+        this.jobNumber =0;
+        arrivalTime =0; 
+                
+        this.burst[0] =0;
+        this.burst[1] =0;
+        
+        start[0]=0;
+        start[1]=0;
+        
+        finished[0] = false;
+        finished[1] = false;
+        
+        finish[0] =0;     
+        finish[1] =0; 
+         
+        remaining[0]=0;
+        remaining[1]=0;
+        
+        whichBurst=0;
+        
+        this.io=0;    
+        ioInStart[0]=0;
+        ioInStart[1]=0;  
+        ioRemaining=0;
+        addToIO=false;
+        returned=false;
+    }    
+    
+    public Job(int jobNumber , int arrive , int burst,int io,int burst2)
+    {
+        this.jobNumber=jobNumber;
+        arrivalTime=arrive; 
+                
+        this.burst[0]=burst;
+        this.burst[1]=burst2;
+        
+        start[0]=0;
+        start[1]=0;
+        
+        finished[0] = false;
+        finished[1] = false;
+        
+        finish[0] =0;     
+        finish[1] =0; 
+         
+        remaining[0]=burst;
+        remaining[1]=burst2;
+        
+        whichBurst=0;
+        
+        this.io=io;        
+        ioInStart[0]=0;
+        ioInStart[1]=0; 
+        ioRemaining=io;
+        addToIO=false;
+        returned=false;
+    }    
+ }
+
+
+
+ class ReadFile { //get jobs from file    
+        Scanner JobsFile;   
+                
+        int JobsCount=0;
+        int[] QC=new int[2];//Q:quantumTime,C:contextSwitch
+        
+        LinkedList<Job> JobsList=new LinkedList<Job>();  
+        
+    public ReadFile(String file_Path){    
+                        try{
+                                JobsFile=new Scanner(new File(file_Path));
+                        }        
+                        catch(Exception e){
+                                System.out.println("File Not Found");
+                        }
+
+                        //Read number of Jobs, Quantum Time, Context switch time
+                        //number of jobs will be calculated from the jobs read to avoid mistake of entering the wrong number of jobs in the file
+                        QC[0]=JobsFile.nextInt();
+                        QC[1]=JobsFile.nextInt();
+
+                        //Read Jobs 
+                        while(JobsFile.hasNextInt()){      
+                        Job job=new Job(JobsFile.nextInt(),JobsFile.nextInt(),JobsFile.nextInt(),JobsFile.nextInt(),JobsFile.nextInt());//create a job object with each received job    
+                        JobsList.add(job);  
+                        JobsCount++;
+                        }  
+                JobsFile.close();  //close the file when reading is done
+    }          
+    
+        //get  job list
+        public LinkedList<Job> getJobList(){
+            
+            //sieve out invalid processes
+            LinkedList<Job> invalidTest=new LinkedList<Job>();
+            invalidTest.addAll(JobsList);
+            
+            for(Job jb:invalidTest){
+                if(jb.burst[0]==0||jb.io==0&&jb.burst[1]!=0||jb.burst[1]==0&&jb.io!=0){
+                    JobsList.remove(jb);
+                }
+            }
+            
+            //return only valid job list
+            return JobsList;
+        }
+        
+        
+        //get Quantum Time, Context switch time
+        public int[] getQC(){
+               return QC;
+        }
+    
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+public class RoundRobinJFrame extends javax.swing.JFrame {
+
+    /**
+     * Creates new form RoundRobinJFrame
+     */
+    public RoundRobinJFrame() {
+      this.setExtendedState(JFrame.MAXIMIZED_BOTH);//makes the JFrame full screen
+        this.setTitle("ROUND ROBIN SCHEDULING ALGORITHM SIMULATION (Time in Milliseconds) BY BENJAMIN OKWUDILI UGWU (151701004)");        
+        initComponents();   
+        readFileButton.setEnabled(true);
+        runButton.setEnabled(false);
+        stopButton.setEnabled(false);         
+        restartButton.setEnabled(false);
+        
+        pauseButton.setEnabled(false);
+        playButton.setEnabled(false);
+        
+        //bind the gant charts and time scrolls together
+        jScrollPane6.getHorizontalScrollBar().setModel(jScrollPane7.getHorizontalScrollBar().getModel());
+        inputOutputScrollPane.getHorizontalScrollBar().setModel(jScrollPane6.getHorizontalScrollBar().getModel());
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">                          
+    private void initComponents() {
+
+        jScrollPane1 = new javax.swing.JScrollPane();
+        jTable1 = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        jTable3 = new javax.swing.JTable();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        jTable4 = new javax.swing.JTable();
+        jPanel1 = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        runButton = new javax.swing.JButton();
+        jLabel12 = new javax.swing.JLabel();
+        jLabel13 = new javax.swing.JLabel();
+        jLabel14 = new javax.swing.JLabel();
+        numberOfJobsLabel = new javax.swing.JLabel();
+        contextSwitchLabel = new javax.swing.JLabel();
+        quantumLabel = new javax.swing.JLabel();
+        restartButton = new javax.swing.JButton();
+        readFileButton = new javax.swing.JButton();
+        stopButton = new javax.swing.JButton();
+        playButton = new javax.swing.JButton();
+        pauseButton = new javax.swing.JButton();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jobPoolTable = new javax.swing.JTable();
+        jPanel3 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel16 = new javax.swing.JLabel();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        readyQLabel = new javax.swing.JLabel();
+        jPanel4 = new javax.swing.JPanel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel8 = new javax.swing.JLabel();
+        jLabel9 = new javax.swing.JLabel();
+        runningJobLabel = new javax.swing.JLabel();
+        clockLabel = new javax.swing.JLabel();
+        jLabel15 = new javax.swing.JLabel();
+        cpuStatusLabel = new javax.swing.JLabel();
+        jLabel18 = new javax.swing.JLabel();
+        performanceLabel = new javax.swing.JLabel();
+        jPanel5 = new javax.swing.JPanel();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel10 = new javax.swing.JLabel();
+        jLabel11 = new javax.swing.JLabel();
+        averageWTLabel = new javax.swing.JLabel();
+        averageTTLabel = new javax.swing.JLabel();
+        jPanel6 = new javax.swing.JPanel();
+        jLabel7 = new javax.swing.JLabel();
+        jScrollPane6 = new javax.swing.JScrollPane();
+        ganttChartLabel = new javax.swing.JLabel();
+        jLabel17 = new javax.swing.JLabel();
+        inputOutputScrollPane = new javax.swing.JScrollPane();
+        ioLabel = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jScrollPane7 = new javax.swing.JScrollPane();
+        timeLabel = new javax.swing.JLabel();
+        jLabel19 = new javax.swing.JLabel();
+        jLabel22 = new javax.swing.JLabel();
+        jLabel20 = new javax.swing.JLabel();
+        jLabel21 = new javax.swing.JLabel();
+
+        jTable1.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane1.setViewportView(jTable1);
+
+        jTable3.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane3.setViewportView(jTable3);
+
+        jTable4.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "Title 1", "Title 2", "Title 3", "Title 4"
+            }
+        ));
+        jScrollPane4.setViewportView(jTable4);
+
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+
+        jPanel1.setBackground(new java.awt.Color(204, 204, 204));
+
+        jLabel1.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel1.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel1.setText("DATA");
+
+        runButton.setBackground(new java.awt.Color(0, 204, 51));
+        runButton.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        runButton.setForeground(new java.awt.Color(0, 0, 204));
+        runButton.setText("Run Algorithm");
+        runButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                runButtonActionPerformed(evt);
+            }
+        });
+
+        jLabel12.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel12.setText("Time Quantum:");
+
+        jLabel13.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel13.setText("Number of Jobs:");
+
+        jLabel14.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel14.setText("Context Switch Time:");
+
+        numberOfJobsLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        numberOfJobsLabel.setText("---");
+
+        contextSwitchLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        contextSwitchLabel.setText("---");
+
+        quantumLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        quantumLabel.setText("---");
+
+        restartButton.setBackground(new java.awt.Color(0, 204, 51));
+        restartButton.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        restartButton.setForeground(new java.awt.Color(0, 0, 204));
+        restartButton.setText("Restart");
+        restartButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                restartButtonActionPerformed(evt);
+            }
+        });
+
+        readFileButton.setBackground(new java.awt.Color(0, 204, 51));
+        readFileButton.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        readFileButton.setForeground(new java.awt.Color(0, 0, 204));
+        readFileButton.setText("Read File");
+        readFileButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                readFileButtonActionPerformed(evt);
+            }
+        });
+
+        stopButton.setBackground(new java.awt.Color(0, 204, 51));
+        stopButton.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        stopButton.setForeground(new java.awt.Color(0, 0, 204));
+        stopButton.setText("Stop");
+        stopButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stopButtonActionPerformed(evt);
+            }
+        });
+
+        playButton.setBackground(new java.awt.Color(0, 204, 51));
+        playButton.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        playButton.setForeground(new java.awt.Color(0, 0, 204));
+        playButton.setText("Play");
+        playButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                playButtonActionPerformed(evt);
+            }
+        });
+
+        pauseButton.setBackground(new java.awt.Color(0, 204, 51));
+        pauseButton.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        pauseButton.setForeground(new java.awt.Color(0, 0, 204));
+        pauseButton.setText("Pause");
+        pauseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pauseButtonActionPerformed(evt);
+            }
+        });
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGap(22, 22, 22)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel13, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(36, 36, 36))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addComponent(jLabel12, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addGap(41, 41, 41)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(quantumLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(contextSwitchLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 71, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(numberOfJobsLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(18, 18, 18)
+                        .addComponent(readFileButton)
+                        .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGap(5, 5, 5)
+                        .addComponent(runButton)
+                        .addGap(14, 14, 14)
+                        .addComponent(stopButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(restartButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(31, 31, 31))))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel1Layout.createSequentialGroup()
+                .addGap(165, 165, 165)
+                .addComponent(jLabel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(playButton)
+                    .addComponent(pauseButton))
+                .addGap(97, 97, 97))
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel1)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(pauseButton)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel13, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(numberOfJobsLabel))
+                        .addGap(9, 9, 9)
+                        .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(quantumLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)
+                                    .addComponent(jLabel12, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                                .addGap(4, 4, 4)
+                                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(jLabel14, javax.swing.GroupLayout.DEFAULT_SIZE, 22, Short.MAX_VALUE)
+                                    .addComponent(contextSwitchLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 18, Short.MAX_VALUE)))
+                            .addGroup(jPanel1Layout.createSequentialGroup()
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(readFileButton)))
+                        .addGap(37, 37, 37))
+                    .addGroup(jPanel1Layout.createSequentialGroup()
+                        .addComponent(playButton)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(runButton)
+                    .addComponent(restartButton, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(stopButton))
+                .addContainerGap())
+        );
+
+        jPanel2.setBackground(new java.awt.Color(204, 204, 204));
+
+        jLabel2.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel2.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel2.setText("JOB POOL");
+
+        jobPoolTable.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Job ID", "Arrival", "Burst 1", "i/o", "Burst 2", "Start", "Running Burst", "Remaining", "Finish", "Waiting", "Turnaround"
+            }
+        ));
+        jScrollPane2.setViewportView(jobPoolTable);
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel2, javax.swing.GroupLayout.PREFERRED_SIZE, 132, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(405, 405, 405))
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 553, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addComponent(jLabel2)
+                .addGap(0, 0, Short.MAX_VALUE))
+            .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                    .addGap(35, 35, 35)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.DEFAULT_SIZE, 149, Short.MAX_VALUE)
+                    .addContainerGap()))
+        );
+
+        jPanel3.setBackground(new java.awt.Color(204, 204, 204));
+
+        jLabel3.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel3.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel3.setText("READY QUEUE");
+
+        jLabel16.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel16.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel16.setText("<---");
+
+        readyQLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        readyQLabel.setForeground(new java.awt.Color(0, 0, 204));
+        jScrollPane5.setViewportView(readyQLabel);
+
+        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
+        jPanel3.setLayout(jPanel3Layout);
+        jPanel3Layout.setHorizontalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addContainerGap(93, Short.MAX_VALUE)
+                .addComponent(jLabel16, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 175, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(102, 102, 102))
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addGap(72, 72, 72)
+                .addComponent(jLabel3, javax.swing.GroupLayout.PREFERRED_SIZE, 183, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel3Layout.setVerticalGroup(
+            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel3Layout.createSequentialGroup()
+                .addComponent(jLabel3)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel16, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(28, 28, 28))
+                    .addGroup(jPanel3Layout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jScrollPane5)
+                        .addContainerGap())))
+        );
+
+        jPanel4.setBackground(new java.awt.Color(204, 204, 204));
+
+        jLabel4.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel4.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel4.setText("CPU");
+
+        jLabel8.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel8.setText("Running Job");
+
+        jLabel9.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel9.setText("Time");
+
+        runningJobLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        runningJobLabel.setText("---");
+
+        clockLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        clockLabel.setText("---");
+        clockLabel.setName(""); // NOI18N
+
+        jLabel15.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel15.setText("Status");
+
+        cpuStatusLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        cpuStatusLabel.setForeground(new java.awt.Color(0, 204, 51));
+        cpuStatusLabel.setText("Idle");
+        cpuStatusLabel.setName(""); // NOI18N
+
+        jLabel18.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel18.setText("Performance");
+
+        performanceLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        performanceLabel.setText("---");
+
+        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
+        jPanel4.setLayout(jPanel4Layout);
+        jPanel4Layout.setHorizontalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(20, 20, 20)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel8, javax.swing.GroupLayout.PREFERRED_SIZE, 101, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(runningJobLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 78, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGap(69, 69, 69)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel9, javax.swing.GroupLayout.PREFERRED_SIZE, 44, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(clockLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel15, javax.swing.GroupLayout.PREFERRED_SIZE, 58, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(cpuStatusLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 42, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(88, 88, 88)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel18, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGap(10, 10, 10)
+                        .addComponent(performanceLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap())
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addGap(264, 264, 264)
+                .addComponent(jLabel4)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+        jPanel4Layout.setVerticalGroup(
+            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel4Layout.createSequentialGroup()
+                .addComponent(jLabel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addComponent(jLabel18)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(performanceLabel))
+                    .addGroup(jPanel4Layout.createSequentialGroup()
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(jLabel8)
+                            .addComponent(jLabel9)
+                            .addComponent(jLabel15))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                            .addComponent(cpuStatusLabel)
+                            .addComponent(clockLabel)
+                            .addComponent(runningJobLabel))))
+                .addGap(18, 18, 18))
+        );
+
+        jPanel5.setBackground(new java.awt.Color(204, 204, 204));
+
+        jLabel5.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel5.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel5.setText("AVERAGES");
+
+        jLabel10.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel10.setText("Waiting Time");
+
+        jLabel11.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel11.setText("Turnaround Time");
+
+        averageWTLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        averageWTLabel.setText("---");
+
+        averageTTLabel.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        averageTTLabel.setText("---");
+
+        javax.swing.GroupLayout jPanel5Layout = new javax.swing.GroupLayout(jPanel5);
+        jPanel5.setLayout(jPanel5Layout);
+        jPanel5Layout.setHorizontalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addGap(92, 92, 92)
+                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGap(103, 103, 103))
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel5Layout.createSequentialGroup()
+                .addGap(38, 38, 38)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(24, 24, 24)
+                        .addComponent(averageWTLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(37, 37, 37)))
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(38, 38, 38)
+                        .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(29, 29, 29))
+                    .addGroup(jPanel5Layout.createSequentialGroup()
+                        .addGap(56, 56, 56)
+                        .addComponent(averageTTLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addGap(116, 116, 116))))
+        );
+        jPanel5Layout.setVerticalGroup(
+            jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel5Layout.createSequentialGroup()
+                .addComponent(jLabel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel10, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jLabel11, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addGroup(jPanel5Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(averageWTLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(averageTTLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(14, 14, 14))
+        );
+
+        jPanel6.setBackground(new java.awt.Color(204, 204, 204));
+
+        jLabel7.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel7.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel7.setText("GANTT CHARTS");
+
+        ganttChartLabel.setBackground(new java.awt.Color(255, 255, 102));
+        ganttChartLabel.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
+        ganttChartLabel.setForeground(new java.awt.Color(0, 0, 204));
+        jScrollPane6.setViewportView(ganttChartLabel);
+
+        jLabel17.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel17.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel17.setText("CPU");
+
+        ioLabel.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
+        ioLabel.setForeground(new java.awt.Color(0, 0, 204));
+        inputOutputScrollPane.setViewportView(ioLabel);
+
+        jLabel6.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel6.setForeground(new java.awt.Color(255, 0, 0));
+        jLabel6.setText("I/O");
+
+        timeLabel.setFont(new java.awt.Font("Monospaced", 1, 14)); // NOI18N
+        jScrollPane7.setViewportView(timeLabel);
+
+        jLabel19.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel19.setText("m/s");
+
+        jLabel22.setFont(new java.awt.Font("Tahoma", 1, 14)); // NOI18N
+        jLabel22.setText("CPU= Central Processing Unit.   I/O(i/o)=Input/Output.   m/s=Millisecond.   ID=Identity");
+
+        javax.swing.GroupLayout jPanel6Layout = new javax.swing.GroupLayout(jPanel6);
+        jPanel6.setLayout(jPanel6Layout);
+        jPanel6Layout.setHorizontalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGap(29, 29, 29)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                    .addComponent(jLabel17)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel19, javax.swing.GroupLayout.PREFERRED_SIZE, 36, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 206, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(0, 0, Short.MAX_VALUE))
+                    .addComponent(inputOutputScrollPane)
+                    .addComponent(jScrollPane6)
+                    .addComponent(jScrollPane7))
+                .addContainerGap())
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel6Layout.createSequentialGroup()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(jLabel22, javax.swing.GroupLayout.PREFERRED_SIZE, 646, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(329, 329, 329))
+        );
+        jPanel6Layout.setVerticalGroup(
+            jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel6Layout.createSequentialGroup()
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(55, 55, 55)
+                        .addComponent(jLabel17))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addComponent(jLabel7, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(10, 10, 10)
+                        .addComponent(jScrollPane6, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(inputOutputScrollPane, javax.swing.GroupLayout.PREFERRED_SIZE, 75, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(23, 23, 23)
+                        .addComponent(jLabel6)))
+                .addGroup(jPanel6Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane7, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel6Layout.createSequentialGroup()
+                        .addGap(28, 28, 28)
+                        .addComponent(jLabel19)))
+                .addGap(18, 18, 18)
+                .addComponent(jLabel22)
+                .addContainerGap(14, Short.MAX_VALUE))
+        );
+
+        jLabel20.setFont(new java.awt.Font("Tahoma", 1, 24)); // NOI18N
+        jLabel20.setForeground(new java.awt.Color(0, 0, 204));
+        jLabel20.setText("ROUND ROBIN ");
+
+        jLabel21.setFont(new java.awt.Font("Tahoma", 1, 18)); // NOI18N
+        jLabel21.setForeground(new java.awt.Color(0, 0, 204));
+        jLabel21.setText("SCHEDULING ALGORITHM SIMULATION");
+
+        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
+        getContentPane().setLayout(layout);
+        layout.setHorizontalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel6, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(106, 106, 106)
+                                .addComponent(jLabel20))
+                            .addGroup(layout.createSequentialGroup()
+                                .addGap(22, 22, 22)
+                                .addComponent(jLabel21)))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                .addContainerGap())
+        );
+        layout.setVerticalGroup(
+            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel20, javax.swing.GroupLayout.PREFERRED_SIZE, 25, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jLabel21, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGap(10, 10, 10)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jPanel3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(jPanel5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel6, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap())
+        );
+
+        pack();
+        setLocationRelativeTo(null);
+    }// </editor-fold>                        
+
+    
+            //parameters for running the process
+           String filePath;
+           int quantumTime;           
+           int contextSwitch;
+           int quantumCount;
+           int clock=0;
+           int finishedJobs=0;//counts the number of jobs finished at each step
+           boolean stopped=false;
+           boolean pause=false;
+                      
+           boolean switchNow=true;
+           int switchCount=0;
+              
+           LinkedList<Job> processList=new LinkedList<Job>();//the processes to be run           
+           LinkedList<Job> readyQueue=new LinkedList<Job>();//the jobs ready to be run   
+           LinkedList<Job> ioQueue=new LinkedList<Job>();//the jobs in i/o 
+           
+           LinkedList<Job> finishedJobsList=new LinkedList<Job>();//the jobs that have finished running  
+           Job currentJob=new Job();
+                      
+           String ganttIncrease=""; //for gantt chart
+           String showIO=""; //to show processes in i/o 
+           String showReadyQ;//to show processes in ready queue
+           String showMS="";
+           
+           int cpuIdleTime=0;
+           int cpuBusyTime=0;
+           double cpuPerformance=0;
+           
+           
+           void populateData(){
+               //processList.clear();
+            
+            JFileChooser chooser = new JFileChooser();
+        chooser.setCurrentDirectory(new java.io.File("C:\\Users\\lenovo\\Desktop\\Final Year\\Final Year 2nd Semester\\GPJ 2\\RoundRobin"));//default path to open
+        if(chooser.showOpenDialog(null)==JFileChooser.APPROVE_OPTION){
+            filePath=chooser.getSelectedFile().getAbsolutePath();
+        }
+               
+               
+            ReadFile list=new ReadFile(filePath);
+            processList.addAll(list.getJobList());
+           
+           quantumTime=list.getQC()[0];
+           contextSwitch=list.getQC()[1];
+                   
+           numberOfJobsLabel.setText(""+processList.size());
+           quantumLabel.setText(""+quantumTime);
+           contextSwitchLabel.setText(""+contextSwitch);
+           
+           
+           
+           //print the job data
+                                DefaultTableModel model=(DefaultTableModel) jobPoolTable.getModel();                                 
+                                Object rowData[]=new Object[10];
+                                for(int k=0;k<processList.size();k++)
+                                {
+                                    rowData[0]=processList.get(k).jobNumber;
+                                    rowData[1]=processList.get(k).arrivalTime;
+                                    rowData[2]=processList.get(k).burst[0];
+                                    //System.out.print(rowData[2]);
+                                    rowData[3]=processList.get(k).io;
+                                    rowData[4]=processList.get(k).burst[1];
+                                    model.addRow(rowData);
+                                
+                                }
+           
+           }
+           
+    
+    private void runButtonActionPerformed(java.awt.event.ActionEvent evt) {                                          
+        // TODO add your handling code here:              
+         
+           
+           
+           Thread t=new Thread(){ //start a thread               
+           
+               
+               public void run(){
+                   
+                
+            ///start processing           
+            runButton.setEnabled(false);
+            stopButton.setEnabled(true);     
+            
+            pauseButton.setEnabled(true);
+        
+             
+           for(clock=0;;clock++){ //clock ticking
+                   //System.out.println("tick: "+clock);
+                   //display clock on frame
+                clockLabel.setText(""+clock);
+                
+                showMS+="|"+String.format("%-5d",clock);
+                timeLabel.setText(showMS);
+                
+                   for(Job jb:processList){//check if a new process arrived at this time unit
+                        int ck=jb.arrivalTime; //if you use jb.arrivalTime directly, it returns the address not the value
+                        if(ck==clock){
+                            readyQueue.add(jb); //add arrived process to the ready queue                            
+                        }
+                   }                                                                                                     
+                      
+                   
+                
+                   //ganttChart inputOutput                       
+                        if(ioQueue.isEmpty()==false){//if io queue is not empty                                       
+                                showIO+="|"+String.format("%-5d",ioQueue.getFirst().jobNumber); 
+                                ioLabel.setText(showIO);                                            
+                        }else{
+                                String notInUse="";
+                                showIO+="|"+String.format("%-5s",notInUse); 
+                                ioLabel.setText(showIO);                             
+                        }
+                   
+                   
+                   
+                   //process a unit of ioJob
+                    if(ioQueue.isEmpty()==false){
+                        if(ioQueue.getFirst().ioRemaining==ioQueue.getFirst().io){ //get the time when io started to process for this Job
+                            ioQueue.getFirst().ioInStart[1]=clock-1;//-1 beacause it started processing one unit ago
+                        }
+                        ioQueue.getFirst().ioRemaining--; //process one unit of it and return it when zero on the next +1
+                                              
+                    }
+                
+               
+                  
+                        //stopping the iteration
+                        if(finishedJobsList.size()==processList.size() && stopped==false){
+                            cpuStatusLabel.setText("Idle");
+                            runningJobLabel.setText("---");
+                            
+                            runButton.setEnabled(false); 
+                            stopButton.setEnabled(false);            
+                            restartButton.setEnabled(true);
+                            
+                            pauseButton.setEnabled(false);
+                                    
+                            
+                            double TT;
+                            double WT;
+
+                            double sumTT=0;
+                            double sumWT=0;
+
+                            double averageTT;
+                            double averageWT;                            
+                           
+
+                            /////Calculating Average Results
+                            for(Job j: finishedJobsList){  
+                               
+                               if(j.burst[1]>0){ //for jobs with a second burst >0
+                                    TT=j.finish[1]-j.arrivalTime;
+                                    sumTT+= TT;
+
+                                    WT=TT-( (j.burst[0]+j.burst[1]) + (j.ioInStart[1]-j.ioInStart[0]) ); //waiting time for a process with io=TT-(total bursts+total io time(io time can have a wait time which will be added to the normal io time to get the total time spent in io, however, when it came out-when it entered takes care of the total time spent in io) )
+                                    sumWT+=WT; 
+                               }else{//having only burst1                                   
+                                   TT=j.finish[0]-j.arrivalTime;
+                                    sumTT+= TT;
+
+                                    WT=TT-(j.burst[0]); 
+                                    sumWT+=WT;                      
+                               }                           
+                            }  
+
+                            averageTT=sumTT/finishedJobsList.size();
+                            averageWT=sumWT/finishedJobsList.size();
+                              
+                          
+                            averageWTLabel.setText(String.format("%.2f",averageWT)+"");
+                            averageTTLabel.setText(String.format("%.2f",averageTT)+"");
+                            
+                            
+                            
+                            cpuBusyTime=clock-cpuIdleTime;                   
+                            cpuPerformance= (cpuBusyTime/(cpuBusyTime+(float)cpuIdleTime))*100;
+                            
+                            System.out.println(cpuBusyTime+"busyT");
+                            performanceLabel.setText(String.format("%.0f",cpuPerformance)+"%");
+                            
+                            
+                            //The Last slash of cpu gant chart
+                            String finished="";                            
+                            ganttIncrease+="|"+String.format("%-5s",finished);
+                            ganttChartLabel.setText(ganttIncrease);//gantchart label area    
+                            
+                            break;//stop if all jobs have finished processing               
+                        } //System.out.println(finishedJobsList.size()+" = size");
+                        
+                        
+                        //show cpu performance     
+                        if(clock>0){  //the if condition is to keep from showing NaN                         
+                        
+                        cpuBusyTime=clock-cpuIdleTime;                   
+                        cpuPerformance= (cpuBusyTime/(cpuBusyTime+(float)cpuIdleTime))*100;                            
+                        System.out.println(cpuPerformance+"performanceeeee");
+                        performanceLabel.setText(String.format("%.0f",cpuPerformance)+"%");
+                        
+                        }
+                        
+                  /*
+                  LinkedList<Job> ioQueueTemp=new LinkedList<Job>();
+                  ioQueueTemp.clear();
+                  ioQueueTemp.addAll(ioQueue);                  
+                  for(Job ready:ioQueueTemp){
+                        if(ready.finish[0]+ready.io+lastIOfree==clock){ 
+                            readyQueue.add(ready); //add ready; to return Job to the end of ready queue
+                            currentJob.ioInOut[1]=clock;//record the time it left io
+                            lastIOfree+=clock;
+                            System.out.println(ready.jobNumber+"returned to ready queue");
+                            ioQueue.remove(ready);//remove the job from i/o
+                            System.out.println(ready.jobNumber+"removed from i/o");                              
+                        }
+                  }
+                   
+                */
+                        
+                   
+                   
+                    if(readyQueue.isEmpty()==false && switchNow==true || quantumCount!=quantumTime && quantumCount!=0 && switchNow==true){
+                        //if there is a ready job || if all jobs have been taken from ready queue but current job is still processing(quantumCount!=quantumTime). 
+                        //in the very beginning, quantumCount will not be equal to quantumTime; it will be equal to zero thus, to guard against this block being 
+                        //executed even when no jobs has been received at the very beginning, && quantumCount!=0 was added  
+                        
+                        if(quantumCount==quantumTime || quantumCount==0){//if the time quantum has completed for the last job ||  "==0 part" is to allow picking of Job at the very first beginning
+                            currentJob=readyQueue.getFirst();//take the first job in ready queue
+                            runningJobLabel.setText(""+currentJob.jobNumber);
+                            readyQueue.remove(0);//remove the current job from the ready queue
+                            quantumCount=0;//reset quantum count to 0 when quantumCount==quantumTime
+                        }
+                         
+                        System.out.println("current job: "+currentJob.jobNumber);
+                        
+                        if(currentJob.burst[currentJob.whichBurst]==currentJob.remaining[currentJob.whichBurst]){//get the start time
+                            currentJob.start[currentJob.whichBurst]=clock;
+                        }
+                                    
+                        cpuStatusLabel.setText("Busy");
+                        currentJob.remaining[currentJob.whichBurst]--;//process one burst time unit of it                        
+                        quantumCount++;//increase the number of burst time unit processed for a job
+
+                       
+                        if(quantumCount==quantumTime && currentJob.remaining[currentJob.whichBurst]!=0){//quantum time reached but, burst not completed yet
+                            readyQueue.add(currentJob);//put back to the end of the ready queue 
+                             //quantumCount is ==quantumTime at this point
+                             switchNow=false;
+                        
+                        }else{//quantum time completed or NOT,  but burst completed(also takes care of when burst <quantum) 
+                                if(currentJob.remaining[currentJob.whichBurst]==0){
+                                    currentJob.finish[currentJob.whichBurst]=clock+1;//finish time +1 because a job that comes in at say 3, processes one unit from 3 to 4
+                                    currentJob.finished[currentJob.whichBurst]=true;
+                                     switchNow=false;
+                                    
+                                    if(currentJob.burst[1]>0){currentJob.whichBurst=1;}//move to the second burst if there is second burst(>0) since first burst is completed
+                                    quantumCount=quantumTime;//make it equal to quantum time to allow for another job to be picked from ready queue (another job is picked when the current one has completed its burst time or finished)
+                                    
+                                    /////////////// 
+                                    //adding to io
+                                    if(currentJob.remaining[0]==0 && currentJob.io>0 && currentJob.addToIO==false){                                        
+                                        ioQueue.add(currentJob);
+                                        currentJob.addToIO=true;
+                                        currentJob.ioInStart[0]=clock;//record when it entered io
+                                        System.out.println(currentJob.jobNumber+" added to i/o");    
+                                    }
+                          
+                                    
+                                }                        
+                        }
+                        
+                        //when a job finishes
+                        if(currentJob.remaining[0]==0 && currentJob.remaining[1]==0){
+                            finishedJobsList.add(currentJob);
+                            System.out.println(currentJob.jobNumber+" finished");                            
+                        }
+                        
+                        
+                                              
+                        //ganttChart  cpu                      
+                        ganttIncrease+="|"+String.format("%-5d",currentJob.jobNumber);
+                        ganttChartLabel.setText(ganttIncrease);//gantchart label area
+                        
+                                        
+                        //show ready queue                        
+                        showReadyQ="   ";
+                        for(Job rq:readyQueue){                        
+                            showReadyQ+="<---"+rq.jobNumber;                            
+                        }
+                        readyQLabel.setText(showReadyQ);
+                        
+                        
+                        
+                        
+                        //print updates on the table(find the current Job on the Table and update the data)
+                                
+                                DefaultTableModel model=(DefaultTableModel) jobPoolTable.getModel();                                 
+                                
+                                for(int k=0;k<processList.size();k++){
+                                    if(processList.get(k).jobNumber==currentJob.jobNumber){
+                                                                        
+                                            int rm=currentJob.remaining[currentJob.whichBurst];
+                                            
+                                            model.setValueAt(currentJob.start[0],k,5);//value,row,column                                    
+                                            model.setValueAt(rm,k,7);//value,row,column
+                                            
+                                            if(currentJob.burst[1]==0){//if a Job has no second burst >0
+                                                
+                                                    if(currentJob.remaining[0]!=0){//if the burst is still processing
+                                                    model.setValueAt(currentJob.whichBurst+1,k,6);//value,row,column
+                                                    }else{
+                                                        model.setValueAt("-",k,6);//value,row,column
+                                                    }
+                                                
+                                                    if(currentJob.finished[0]==true){ //if the job has finished (since there is only burst1)                                               
+                                                        int wt,tt;
+                                                        tt=currentJob.finish[0]-currentJob.arrivalTime;
+                                                        wt=tt-(currentJob.burst[0]);
+                                                        model.setValueAt(currentJob.finish[0],k,8);//value,row,column
+                                                        model.setValueAt(wt,k,9);//value,row,column
+                                                        model.setValueAt(tt,k,10);//value,row,column                                            
+                                                    }   
+                                            }else{//if a job has burst1 and burst2
+                                                    
+                                                    if(currentJob.remaining[1]!=0){//if the burst is still processing
+                                                        model.setValueAt(currentJob.whichBurst+1,k,6);//value,row,column
+                                                    }else{
+                                                        model.setValueAt("-",k,6);//value,row,column
+                                                    }
+                                                    
+                                                    if(currentJob.finished[1]==true){ //if the job has finished burst1 and burst2                                              
+                                                        int wt,tt;
+                                                        tt=currentJob.finish[1]-currentJob.arrivalTime;
+                                                        wt=tt-( (currentJob.burst[0]+currentJob.burst[1])+ (currentJob.ioInStart[1]-currentJob.ioInStart[0]) );
+                                                        model.setValueAt(currentJob.finish[1],k,8);//value,row,column
+                                                        model.setValueAt(wt,k,9);//value,row,column
+                                                        model.setValueAt(tt,k,10);//value,row,column                                            
+                                                    }   
+                                                }
+                                           
+                                            break;
+                                    }
+                                
+                                }
+                                                                
+                       
+                  //stopping cut from here
+                  
+                 
+                  //when Context Switch is==0 in the file
+                     if(contextSwitch==0){
+                         switchNow=true;
+                         
+                         //if context switch is zero in file, without this statement, it will take one clock time before increasing switchNow by 
+                         //one(since execution will first have to get into the else statement to find context switch==0) and by icreasing 
+                         //switchCount by one, error will occur since switchCount will then never be equal to contextSwitch however,
+                         //with this statement, the effect of context switch is nullified; it will be true ready to execute the next burst
+                     }      
+                     
+                        
+                    } else{cpuStatusLabel.setText("Idle"); //to show when cpu is not processing any jobs at the unit times
+                            runningJobLabel.setText("---");//to show that no job is running at this point
+                            cpuIdleTime++;
+                    
+                         String idle="";
+                        //ganttChart  cpu when idle
+                        ganttIncrease+="|"+String.format("%-5s",idle);
+                        ganttChartLabel.setText(ganttIncrease);//gantchart label area   
+                        
+                        if(switchNow==false){ //if one iteration of quantum has finished or a process with remaining time less than quantum finished
+                            switchCount++; //count increases till context switch time
+                            
+                            if(switchCount==contextSwitch){//when context switch time has elapsed, turn switchNow to true(to accept the next process) and reset switchCount to zero
+                                 switchNow=true;
+                                 switchCount=0;
+                            }                        
+                        }
+                        
+                        
+                    }
+                    
+                    
+                    
+                        
+                    
+                  
+                  
+                  //returning Jobs to the ready queue from i/o
+                  if(ioQueue.isEmpty()==false){                   
+                      
+                        if(ioQueue.getFirst().ioRemaining==0){ 
+                            readyQueue.add(ioQueue.getFirst()); //add ready; to return Job to the end of ready queue
+                                                        
+                            System.out.println(ioQueue.getFirst().jobNumber+"returned to ready queue");
+                            
+                            System.out.println(ioQueue.getFirst().jobNumber+"removed from i/o"); 
+                            ioQueue.remove(ioQueue.getFirst());//remove the job from i/o
+                        }
+                      
+                  }
+                
+                              
+                                //execute by one second gap
+                                    try
+                                    {
+                                        
+                                        Thread.sleep(1000);
+                                    }
+                                    catch(InterruptedException ex)
+                                    {
+                                        System.out.println("Working......");
+                                    }
+                                    
+                                    //stop if stop button is clicked
+                                    if(stopped==true){
+                                        averageWTLabel.setText("N/A");
+                                        averageTTLabel.setText("N/A");                                       
+
+                                        break;//stop if stop button is clicked
+                                    }
+                                    
+                                    //pause if pause button is pressed
+                                    while(pause==true){
+                                          
+                                        System.out.println("paused......");
+                                    }
+                                    
+                    
+                    }
+               }
+               
+           
+           }; t.start();          
+            
+            
+    }                                         
+
+    private void restartButtonActionPerformed(java.awt.event.ActionEvent evt) {                                              
+        // TODO add your handling code here:
+        //populateData();
+       
+                     
+        dispose();
+        RoundRobinJFrame restart=new RoundRobinJFrame();
+        restart.setVisible(true);
+        
+    }                                             
+
+    private void readFileButtonActionPerformed(java.awt.event.ActionEvent evt) {                                               
+        // TODO add your handling code here:
+        populateData();
+        readFileButton.setEnabled(false);
+        runButton.setEnabled(true);
+    }                                              
+
+    private void stopButtonActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        // TODO add your handling code here:
+        
+         stopped=true;
+         stopButton.setEnabled(false);            
+         restartButton.setEnabled(true);
+         runButton.setEnabled(false);
+         
+         pauseButton.setEnabled(false);
+                 
+         finishedJobsList=processList;
+    }                                          
+
+    private void playButtonActionPerformed(java.awt.event.ActionEvent evt) {                                           
+        // TODO add your handling code here:
+        playButton.setEnabled(false);
+        pauseButton.setEnabled(true);
+        
+        pause=false;
+       //playButton.setEnabled(false);
+        
+    }                                          
+
+    private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {                                            
+        // TODO add your handling code here:
+        pauseButton.setEnabled(false);
+        playButton.setEnabled(true);
+        pause=true;
+    }                                           
+
+    
+   
+    
+    
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String args[]) {
+        /* Set the Nimbus look and feel */
+        //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
+        /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.
+         * For details see http://download.oracle.com/javase/tutorial/uiswing/lookandfeel/plaf.html 
+         */
+        try {
+            for (javax.swing.UIManager.LookAndFeelInfo info : javax.swing.UIManager.getInstalledLookAndFeels()) {
+                if ("Nimbus".equals(info.getName())) {
+                    javax.swing.UIManager.setLookAndFeel(info.getClassName());
+                    break;
+                }
+            }
+        } catch (ClassNotFoundException ex) {
+            java.util.logging.Logger.getLogger(RoundRobinJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (InstantiationException ex) {
+            java.util.logging.Logger.getLogger(RoundRobinJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (IllegalAccessException ex) {
+            java.util.logging.Logger.getLogger(RoundRobinJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        } catch (javax.swing.UnsupportedLookAndFeelException ex) {
+            java.util.logging.Logger.getLogger(RoundRobinJFrame.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
+        }
+        //</editor-fold>
+
+        /* Create and display the form */
+        java.awt.EventQueue.invokeLater(new Runnable() {
+            public void run() {
+                new RoundRobinJFrame().setVisible(true);
+            }
+        });
+    }
+
+    // Variables declaration - do not modify                     
+    private javax.swing.JLabel averageTTLabel;
+    private javax.swing.JLabel averageWTLabel;
+    private javax.swing.JLabel clockLabel;
+    private javax.swing.JLabel contextSwitchLabel;
+    private javax.swing.JLabel cpuStatusLabel;
+    private javax.swing.JLabel ganttChartLabel;
+    private javax.swing.JScrollPane inputOutputScrollPane;
+    private javax.swing.JLabel ioLabel;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel10;
+    private javax.swing.JLabel jLabel11;
+    private javax.swing.JLabel jLabel12;
+    private javax.swing.JLabel jLabel13;
+    private javax.swing.JLabel jLabel14;
+    private javax.swing.JLabel jLabel15;
+    private javax.swing.JLabel jLabel16;
+    private javax.swing.JLabel jLabel17;
+    private javax.swing.JLabel jLabel18;
+    private javax.swing.JLabel jLabel19;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel20;
+    private javax.swing.JLabel jLabel21;
+    private javax.swing.JLabel jLabel22;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JLabel jLabel8;
+    private javax.swing.JLabel jLabel9;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JPanel jPanel3;
+    private javax.swing.JPanel jPanel4;
+    private javax.swing.JPanel jPanel5;
+    private javax.swing.JPanel jPanel6;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JScrollPane jScrollPane6;
+    private javax.swing.JScrollPane jScrollPane7;
+    private javax.swing.JTable jTable1;
+    private javax.swing.JTable jTable3;
+    private javax.swing.JTable jTable4;
+    private javax.swing.JTable jobPoolTable;
+    private javax.swing.JLabel numberOfJobsLabel;
+    private javax.swing.JButton pauseButton;
+    private javax.swing.JLabel performanceLabel;
+    private javax.swing.JButton playButton;
+    private javax.swing.JLabel quantumLabel;
+    private javax.swing.JButton readFileButton;
+    private javax.swing.JLabel readyQLabel;
+    private javax.swing.JButton restartButton;
+    private javax.swing.JButton runButton;
+    private javax.swing.JLabel runningJobLabel;
+    private javax.swing.JButton stopButton;
+    private javax.swing.JLabel timeLabel;
+    // End of variables declaration                   
+}
+
