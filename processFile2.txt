@@ -1,0 +1,8 @@
+3	0	
+1	0	8	6	4
+2	4	6	0	0
+3	5	5	2	6
+
+
+/*Time Quantum(Time Slice),Context switch Time */
+/*Process Name(ID), Arrival Time, Burst Time1,Input/Output Time,Burst Time2 */
