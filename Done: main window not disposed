@@ -227,7 +227,7 @@ public class RoundRobinJFrame extends javax.swing.JFrame {
      */
     public RoundRobinJFrame() {
       this.setExtendedState(JFrame.MAXIMIZED_BOTH);//makes the JFrame full screen
-        this.setTitle("ROUND ROBIN SCHEDULING ALGORITHM SIMULATION BY BENJAMIN OKWUDILI UGWU (151701004)");        
+        this.setTitle("ROUND ROBIN SCHEDULING METHOD SIMULATION BY BENJAMIN OKWUDILI UGWU (151701004)");        
         initComponents();   
         readFileButton.setEnabled(true);
         runButton.setEnabled(false);
