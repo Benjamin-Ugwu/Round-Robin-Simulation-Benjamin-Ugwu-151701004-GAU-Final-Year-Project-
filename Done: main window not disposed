@@ -133,7 +133,7 @@ import javax.swing.table.DefaultTableModel;
                         JobsCount++;
                         }  
                 }catch(Exception e){
-                    JOptionPane.showMessageDialog(null,"Please Adhere To The Data File Instructions Below:\n*Use Only \".txt\" Files\n*Positive Integers >=0\n*Fill All Fields Accordingly", "ERROR: " + "FILE ERROR DETECTED!", JOptionPane.INFORMATION_MESSAGE);
+                    JOptionPane.showMessageDialog(null,"Please Adhere To The Data File Instructions Below:\n*Select a Text File(\".txt\")\n*Positive Integers >=0\n*Fill All Fields Accordingly", "ERROR: " + "FILE ERROR DETECTED!", JOptionPane.INFORMATION_MESSAGE);
                                         
                     RoundRobinJFrame restartSimulator=new RoundRobinJFrame();                    
                     restartSimulator.setVisible(true);
